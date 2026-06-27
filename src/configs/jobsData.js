@@ -1,0 +1,38 @@
+export const jobsData = [
+  {
+    id: "up-police-constable-2026",
+    title: "UP Police Constable Recruitment 2026",
+    titleHi: "यूपी पुलिस कांस्टेबल भर्ती 2026",
+    type: "Job Form",
+    status: "Apply Online",
+    lastDate: "15 July 2026",
+    color: "bg-rose-50 text-rose-700 border-rose-100",
+  },
+  {
+    id: "upsssc-pet-phase-1",
+    title: "UPSSSC PET Application Phase 1",
+    titleHi: "यूपीएसएसएससी पीईटी आवेदन चरण 1",
+    type: "Exam Form",
+    status: "Link Active",
+    lastDate: "30 June 2026",
+    color: "bg-emerald-50 text-emerald-700 border-emerald-100",
+  },
+  {
+    id: "up-board-supplementary-result",
+    title: "UP Board High School & Inter Supplementary Results",
+    titleHi: "यूपी बोर्ड हाईस्कूल एवं इंटर कंपार्टमेंट परीक्षा परिणाम",
+    type: "Result",
+    status: "Released",
+    lastDate: "Declared",
+    color: "bg-blue-50 text-blue-700 border-blue-100",
+  },
+  {
+    id: "ssc-gd-admit-card",
+    title: "SSC GD Constable Admit Card Download",
+    titleHi: "एसएससी जीडी कांस्टेबल प्रवेश पत्र डाउनलोड",
+    type: "Admit Card",
+    status: "Available",
+    lastDate: "Exam starts July",
+    color: "bg-purple-50 text-purple-700 border-purple-100",
+  },
+];

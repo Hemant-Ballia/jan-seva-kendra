@@ -1,0 +1,130 @@
+@import url("https://fonts.googleapis.com/css2?family=Hind:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Hind", "Noto Sans Devanagari", ui-sans-serif, system-ui,
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  font-family: "Hind", "Noto Sans Devanagari", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  text-decoration: none;
+}
+
+header,
+nav,
+section,
+footer {
+  width: 100%;
+  max-width: 100%;
+}
+
+.swiper {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.swiper-wrapper,
+.swiper-slide {
+  max-width: 100%;
+}
+
+.page-x {
+  padding-left: 5%;
+  padding-right: 5%;
+}
+
+/* Hero swiper pagination */
+.hero-pagination .swiper-pagination-bullet {
+  width: 8px;
+  height: 8px;
+  margin: 0 4px !important;
+  background: #ffffff;
+  opacity: 0.8;
+}
+
+.hero-pagination .swiper-pagination-bullet-active {
+  width: 24px;
+  border-radius: 999px;
+  background: #f97316;
+  opacity: 1;
+}
+
+/* Live ticker */
+.ticker-track {
+  animation: ticker-scroll 34s linear infinite;
+  will-change: transform;
+}
+
+.ticker-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Hide browser scrollbar line */
+html {
+  scrollbar-width: none;
+}
+
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
