@@ -10,19 +10,29 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 
-import { getCurrentUser, logoutUser } from "../../utils/authStorage";
+import { useAuth } from "../../context/AuthContext";
 import { useLang } from "../../context/LangContext";
+import { useMyBookings } from "../../api/hooks";
 
 const UserDashboard = () => {
   const navigate = useNavigate();
-  const currentUser = getCurrentUser();
+  const { user: currentUser, logout } = useAuth();
   const { lang } = useLang();
   const isHindi = lang === "hi";
 
+  const { data: bookings = [], isLoading: bookingsLoading } = useMyBookings();
+
   const handleLogout = () => {
-    logoutUser();
+    logout();
     toast.success(isHindi ? "Logout हो गया।" : "Logged out successfully.");
     navigate("/login");
+  };
+
+  const getStatusClass = (status) => {
+    if (status === "Completed") return "bg-emerald-50 text-emerald-700 border-emerald-100";
+    if (status === "Processing") return "bg-blue-50 text-blue-700 border-blue-100";
+    if (status === "Cancelled") return "bg-rose-50 text-rose-700 border-rose-100";
+    return "bg-orange-50 text-orange-700 border-orange-100";
   };
 
   const quickCards = [
@@ -147,26 +157,75 @@ const UserDashboard = () => {
             </h3>
           </div>
 
-          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center">
-            <p className="text-sm font-bold text-slate-500">
-              {isHindi
-                ? "अभी कोई booking record नहीं है।"
-                : "No booking record found yet."}
-            </p>
+          {bookingsLoading ? (
+            <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center">
+              <p className="text-sm font-bold text-slate-500">
+                {isHindi ? "Booking लोड हो रही हैं..." : "Loading your bookings..."}
+              </p>
+            </div>
+          ) : bookings.length > 0 ? (
+            <div className="space-y-3">
+              {bookings.map((booking) => (
+                <article
+                  key={booking.id}
+                  className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div>
+                    <div className="mb-1 flex flex-wrap items-center gap-2">
+                      <span className="rounded-md border border-slate-200 bg-white px-2 py-0.5 font-mono text-xs font-extrabold text-blue-950">
+                        {booking.tokenNo}
+                      </span>
+                      <span
+                        className={`rounded-full border px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide ${getStatusClass(
+                          booking.status
+                        )}`}
+                      >
+                        {booking.status}
+                      </span>
+                    </div>
+                    <h4 className="text-sm font-extrabold text-slate-900">
+                      {booking.service}
+                    </h4>
+                    <p className="text-xs font-semibold text-slate-500">
+                      {booking.category || "General"}
+                    </p>
+                  </div>
 
-            <p className="mt-1 text-xs font-medium text-slate-400">
-              {isHindi
-                ? "Website से token book करने के बाद यहां status दिखेगा।"
-                : "After booking a token from the website, the status will appear here."}
-            </p>
+                  <div className="text-left sm:text-right">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                      {isHindi ? "बुकिंग तारीख" : "Booked On"}
+                    </p>
+                    <p className="text-xs font-bold text-slate-700">
+                      {booking.createdAt
+                        ? new Date(booking.createdAt).toLocaleDateString()
+                        : "N/A"}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center">
+              <p className="text-sm font-bold text-slate-500">
+                {isHindi
+                  ? "अभी कोई booking record नहीं है।"
+                  : "No booking record found yet."}
+              </p>
 
-            <Link
-              to="/"
-              className="mt-4 inline-flex items-center rounded-md bg-orange-500 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-orange-600"
-            >
-              {isHindi ? "अभी टोकन बुक करें" : "Book Token Now"}
-            </Link>
-          </div>
+              <p className="mt-1 text-xs font-medium text-slate-400">
+                {isHindi
+                  ? "Website से token book करने के बाद यहां status दिखेगा।"
+                  : "After booking a token from the website, the status will appear here."}
+              </p>
+
+              <Link
+                to="/"
+                className="mt-4 inline-flex items-center rounded-md bg-orange-500 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-orange-600"
+              >
+                {isHindi ? "अभी टोकन बुक करें" : "Book Token Now"}
+              </Link>
+            </div>
+          )}
         </div>
       </section>
     </main>

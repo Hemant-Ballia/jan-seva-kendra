@@ -2,18 +2,18 @@ import { Link, useNavigate } from "react-router-dom";
 import { Home, LogOut, Menu, UserCircle } from "lucide-react";
 import { toast } from "react-toastify";
 
-import { getCurrentUser, logoutUser } from "../../utils/authStorage";
+import { useAuth } from "../../context/AuthContext";
 import { useLang } from "../../context/LangContext";
 
 const AdminHeader = () => {
   const navigate = useNavigate();
-  const currentUser = getCurrentUser();
+  const { user: currentUser, logout } = useAuth();
   const { lang } = useLang();
 
   const isHindi = lang === "hi";
 
   const handleLogout = () => {
-    logoutUser();
+    logout();
     toast.success(isHindi ? "Logout हो गया।" : "Logged out successfully.");
     navigate("/login");
   };

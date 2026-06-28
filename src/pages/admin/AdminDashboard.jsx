@@ -4,48 +4,50 @@ import {
   CheckCircle2,
   Clock,
   FileText,
-  Users,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import { getUsers } from "../../utils/authStorage";
 import { useLang } from "../../context/LangContext";
+import { useAllBookings } from "../../api/hooks";
 
 const AdminDashboard = () => {
   const { lang } = useLang();
   const isHindi = lang === "hi";
 
-  const users = getUsers();
-  const totalUsers = users.filter((user) => user.role === "user").length;
-  const totalAdmins = users.filter((user) => user.role === "admin").length;
+  const { data: bookings = [] } = useAllBookings();
+
+  const totalBookings = bookings.length;
+  const pendingBookings = bookings.filter((b) => b.status === "Pending").length;
+  const completedBookings = bookings.filter((b) => b.status === "Completed").length;
+  const cancelledBookings = bookings.filter((b) => b.status === "Cancelled").length;
 
   const stats = [
     {
-      titleEn: "Total Users",
-      titleHi: "कुल यूजर",
-      value: totalUsers,
-      icon: Users,
-      color: "bg-blue-50 text-blue-700 border-blue-100",
-    },
-    {
-      titleEn: "Admins",
-      titleHi: "एडमिन",
-      value: totalAdmins,
-      icon: CheckCircle2,
-      color: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    },
-    {
-      titleEn: "Bookings",
-      titleHi: "बुकिंग",
-      value: 0,
+      titleEn: "Total Bookings",
+      titleHi: "कुल बुकिंग",
+      value: totalBookings,
       icon: CalendarCheck,
-      color: "bg-orange-50 text-orange-700 border-orange-100",
+      color: "bg-blue-50 text-blue-700 border-blue-100",
     },
     {
       titleEn: "Pending",
       titleHi: "पेंडिंग",
-      value: 0,
+      value: pendingBookings,
       icon: Clock,
+      color: "bg-orange-50 text-orange-700 border-orange-100",
+    },
+    {
+      titleEn: "Completed",
+      titleHi: "कम्प्लीट",
+      value: completedBookings,
+      icon: CheckCircle2,
+      color: "bg-emerald-50 text-emerald-700 border-emerald-100",
+    },
+    {
+      titleEn: "Cancelled",
+      titleHi: "कैंसल",
+      value: cancelledBookings,
+      icon: Bell,
       color: "bg-rose-50 text-rose-700 border-rose-100",
     },
   ];

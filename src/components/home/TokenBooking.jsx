@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Check, Phone, Printer, Send, User } from "lucide-react";
 import { toast } from "react-toastify";
 
+import { useCreateBooking } from "../../api/hooks";
+
 const getTodayDate = () => {
   return new Date().toISOString().split("T")[0];
 };
@@ -69,6 +71,7 @@ const TokenBooking = () => {
   });
 
   const [bookedToken, setBookedToken] = useState(null);
+  const { mutateAsync: createBooking, isPending } = useCreateBooking();
 
   useEffect(() => {
     const handleSetService = (event) => {
@@ -107,8 +110,10 @@ const TokenBooking = () => {
     }));
   };
 
-  const handleTokenSubmit = (event) => {
+  const handleTokenSubmit = async (event) => {
     event.preventDefault();
+
+    if (isPending) return;
 
     const mobileRegex = /^[6-9]\d{9}$/;
 
@@ -127,18 +132,29 @@ const TokenBooking = () => {
       return;
     }
 
-    const tokenNo = `TKN-${Math.floor(1000 + Math.random() * 9000)}`;
+    try {
+      const booking = await createBooking({
+        name: formData.name,
+        mobile: formData.mobile,
+        category: formData.category,
+        service: formData.service,
+        message: formData.message,
+        date: formData.date,
+      });
 
-    setBookedToken({
-      tokenNo,
-      name: formData.name,
-      mobile: formData.mobile,
-      service: formData.service,
-      date: formData.date,
-      time: "Visit during opening hours",
-    });
+      setBookedToken({
+        tokenNo: booking.tokenNo,
+        name: booking.name,
+        mobile: booking.phone,
+        service: booking.service,
+        date: formData.date,
+        time: "Visit during opening hours",
+      });
 
-    toast.success("Token generated successfully.");
+      toast.success("Token generated successfully.");
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   const resetForm = () => {
@@ -368,10 +384,11 @@ const TokenBooking = () => {
 
           <button
             type="submit"
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-900 py-3 font-extrabold uppercase tracking-wide text-white shadow transition-colors hover:bg-slate-900"
+            disabled={isPending}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-900 py-3 font-extrabold uppercase tracking-wide text-white shadow transition-colors hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Send className="h-4 w-4" />
-            Register Token
+            {isPending ? "Registering..." : "Register Token"}
           </button>
         </form>
       )}
