@@ -154,7 +154,7 @@ const Header = () => {
 
           {!isPhone && (
             <Link
-              to="/admin/login"
+              to="/login"
               className="flex items-center gap-1.5 px-3 py-1 rounded-sm border border-orange-300 text-[11px] font-semibold text-orange-700 bg-orange-50 hover:bg-orange-100"
             >
               <ShieldCheck className="w-3.5 h-3.5" />

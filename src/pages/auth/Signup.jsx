@@ -3,11 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, Phone, Shield, User } from "lucide-react";
 import { toast } from "react-toastify";
 
-import { registerUser } from "../../utils/authStorage";
+import { useAuth } from "../../context/AuthContext";
 import { useLang } from "../../context/LangContext";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const { lang } = useLang();
   const isHindi = lang === "hi";
 
@@ -21,6 +22,7 @@ const Signup = () => {
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -39,24 +41,29 @@ const Signup = () => {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const result = registerUser(formData);
+    if (submitting) return;
+    setSubmitting(true);
 
-    if (!result.success) {
-      toast.error(result.message);
-      return;
+    try {
+      const user = await register(formData);
+      toast.success(
+        user.role === "admin"
+          ? isHindi
+            ? "Admin account बन गया।"
+            : "Admin account created successfully."
+          : isHindi
+            ? "Account बन गया।"
+            : "Account created successfully."
+      );
+      navigate(user.role === "admin" ? "/admin/dashboard" : "/user/dashboard");
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setSubmitting(false);
     }
-
-    toast.success(result.message);
-
-    if (result.user.role === "admin") {
-      navigate("/admin/dashboard");
-      return;
-    }
-
-    navigate("/user/dashboard");
   };
 
   return (
@@ -247,9 +254,16 @@ const Signup = () => {
 
             <button
               type="submit"
-              className="w-full rounded-lg bg-blue-800 py-3 text-sm font-bold text-white transition-colors hover:bg-blue-900"
+              disabled={submitting}
+              className="w-full rounded-lg bg-blue-800 py-3 text-sm font-bold text-white transition-colors hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isHindi ? "अकाउंट बनाएं" : "Create Account"}
+              {submitting
+                ? isHindi
+                  ? "अकाउंट बन रहा है..."
+                  : "Creating account..."
+                : isHindi
+                  ? "अकाउंट बनाएं"
+                  : "Create Account"}
             </button>
           </form>
 

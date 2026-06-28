@@ -6,6 +6,7 @@ import { ToastContainer } from "react-toastify";
 
 import App from "./App.jsx";
 import { LangProvider } from "./context/LangContext.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
 
 import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
@@ -17,8 +18,10 @@ createRoot(document.getElementById("root")).render(
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
         <LangProvider>
-          <App />
-          <ToastContainer position="top-right" autoClose={2500} theme="colored" />
+          <AuthProvider>
+            <App />
+            <ToastContainer position="top-right" autoClose={2500} theme="colored" />
+          </AuthProvider>
         </LangProvider>
       </HelmetProvider>
     </QueryClientProvider>

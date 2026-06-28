@@ -1,54 +1,24 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Bell, Edit, Plus, Save, Trash2, X } from "lucide-react";
 import { toast } from "react-toastify";
 
 import { useLang } from "../../context/LangContext";
-
-const NOTICES_KEY = "jsk_admin_notices";
-
-const defaultNotices = [
-  {
-    id: "notice-1",
-    title: "Scholarship form help available",
-    titleHi: "छात्रवृत्ति फॉर्म सहायता उपलब्ध",
-    type: "Scholarship",
-    status: "Active",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "notice-2",
-    title: "PAN card and certificate services available",
-    titleHi: "पैन कार्ड और प्रमाण पत्र सेवाएं उपलब्ध",
-    type: "Service",
-    status: "Active",
-    createdAt: new Date().toISOString(),
-  },
-];
-
-const getNotices = () => {
-  const savedNotices = localStorage.getItem(NOTICES_KEY);
-
-  if (!savedNotices) {
-    localStorage.setItem(NOTICES_KEY, JSON.stringify(defaultNotices));
-    return defaultNotices;
-  }
-
-  try {
-    return JSON.parse(savedNotices);
-  } catch {
-    return defaultNotices;
-  }
-};
-
-const saveNotices = (notices) => {
-  localStorage.setItem(NOTICES_KEY, JSON.stringify(notices));
-};
+import {
+  useAllNotices,
+  useCreateNotice,
+  useUpdateNotice,
+  useDeleteNotice,
+} from "../../api/hooks";
 
 const AdminNotices = () => {
   const { lang } = useLang();
   const isHindi = lang === "hi";
 
-  const [notices, setNotices] = useState([]);
+  const { data: notices = [] } = useAllNotices();
+  const { mutateAsync: createNotice } = useCreateNotice();
+  const { mutateAsync: updateNotice } = useUpdateNotice();
+  const { mutateAsync: deleteNotice } = useDeleteNotice();
+
   const [editingNoticeId, setEditingNoticeId] = useState(null);
 
   const [formData, setFormData] = useState({
@@ -57,10 +27,6 @@ const AdminNotices = () => {
     type: "Service",
     status: "Active",
   });
-
-  useEffect(() => {
-    setNotices(getNotices());
-  }, []);
 
   const resetForm = () => {
     setFormData({
@@ -82,7 +48,7 @@ const AdminNotices = () => {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!formData.title.trim() || !formData.titleHi.trim()) {
@@ -94,36 +60,18 @@ const AdminNotices = () => {
       return;
     }
 
-    if (editingNoticeId) {
-      const updatedNotices = notices.map((notice) =>
-        notice.id === editingNoticeId
-          ? {
-              ...notice,
-              ...formData,
-              updatedAt: new Date().toISOString(),
-            }
-          : notice
-      );
-
-      setNotices(updatedNotices);
-      saveNotices(updatedNotices);
-      toast.success(isHindi ? "Notice update हो गया।" : "Notice updated.");
+    try {
+      if (editingNoticeId) {
+        await updateNotice({ id: editingNoticeId, ...formData });
+        toast.success(isHindi ? "Notice update हो गया।" : "Notice updated.");
+      } else {
+        await createNotice(formData);
+        toast.success(isHindi ? "Notice add हो गया।" : "Notice added.");
+      }
       resetForm();
-      return;
+    } catch (error) {
+      toast.error(error.message);
     }
-
-    const newNotice = {
-      id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
-      ...formData,
-      createdAt: new Date().toISOString(),
-    };
-
-    const updatedNotices = [newNotice, ...notices];
-
-    setNotices(updatedNotices);
-    saveNotices(updatedNotices);
-    toast.success(isHindi ? "Notice add हो गया।" : "Notice added.");
-    resetForm();
   };
 
   const handleEdit = (notice) => {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   CalendarCheck,
   CheckCircle2,
@@ -9,40 +9,19 @@ import {
 import { toast } from "react-toastify";
 
 import { useLang } from "../../context/LangContext";
-
-const BOOKINGS_KEY = "jsk_bookings";
+import { useAllBookings, useUpdateBookingStatus } from "../../api/hooks";
 
 const statusOptions = ["Pending", "Processing", "Completed", "Cancelled"];
-
-const getBookings = () => {
-  const savedBookings = localStorage.getItem(BOOKINGS_KEY);
-
-  if (!savedBookings) {
-    return [];
-  }
-
-  try {
-    return JSON.parse(savedBookings);
-  } catch {
-    return [];
-  }
-};
-
-const saveBookings = (bookings) => {
-  localStorage.setItem(BOOKINGS_KEY, JSON.stringify(bookings));
-};
 
 const AdminBookings = () => {
   const { lang } = useLang();
   const isHindi = lang === "hi";
 
-  const [bookings, setBookings] = useState([]);
+  const { data: bookings = [], isLoading } = useAllBookings();
+  const { mutateAsync: updateStatus } = useUpdateBookingStatus();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-
-  useEffect(() => {
-    setBookings(getBookings());
-  }, []);
 
   const filteredBookings = useMemo(() => {
     const query = searchQuery.toLowerCase();
@@ -70,23 +49,15 @@ const AdminBookings = () => {
       .length,
   };
 
-  const handleStatusChange = (bookingId, newStatus) => {
-    const updatedBookings = bookings.map((booking) =>
-      booking.id === bookingId
-        ? {
-            ...booking,
-            status: newStatus,
-            updatedAt: new Date().toISOString(),
-          }
-        : booking
-    );
-
-    setBookings(updatedBookings);
-    saveBookings(updatedBookings);
-
-    toast.success(
-      isHindi ? "Booking status update हो गया।" : "Booking status updated."
-    );
+  const handleStatusChange = async (bookingId, newStatus) => {
+    try {
+      await updateStatus({ id: bookingId, status: newStatus });
+      toast.success(
+        isHindi ? "Booking status update हो गया।" : "Booking status updated."
+      );
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   const getStatusClass = (status) => {
@@ -183,7 +154,13 @@ const AdminBookings = () => {
           </select>
         </div>
 
-        {filteredBookings.length > 0 ? (
+        {isLoading ? (
+          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-10 text-center">
+            <p className="text-sm font-bold text-slate-500">
+              {isHindi ? "Bookings लोड हो रही हैं..." : "Loading bookings..."}
+            </p>
+          </div>
+        ) : filteredBookings.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[850px] border-collapse text-left text-sm">
               <thead>
@@ -274,8 +251,8 @@ const AdminBookings = () => {
 
             <p className="mt-1 text-xs font-medium text-slate-400">
               {isHindi
-                ? "Token booking form connect होने के बाद records यहां दिखेंगे।"
-                : "Records will appear here after the token booking form is connected."}
+                ? "जब यूजर website से token book करेंगे, records यहां दिखेंगे।"
+                : "Records will appear here once users book tokens from the website."}
             </p>
           </div>
         )}

@@ -3,11 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, Shield, User } from "lucide-react";
 import { toast } from "react-toastify";
 
-import { loginUser } from "../../utils/authStorage";
+import { useAuth } from "../../context/AuthContext";
 import { useLang } from "../../context/LangContext";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const { lang } = useLang();
   const isHindi = lang === "hi";
 
@@ -18,6 +19,7 @@ const Login = () => {
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -35,24 +37,21 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const result = loginUser(formData);
+    if (submitting) return;
+    setSubmitting(true);
 
-    if (!result.success) {
-      toast.error(result.message);
-      return;
+    try {
+      const user = await login(formData);
+      toast.success(isHindi ? "Login सफल रहा।" : "Login successful.");
+      navigate(user.role === "admin" ? "/admin/dashboard" : "/user/dashboard");
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setSubmitting(false);
     }
-
-    toast.success(result.message);
-
-    if (result.user.role === "admin") {
-      navigate("/admin/dashboard");
-      return;
-    }
-
-    navigate("/user/dashboard");
   };
 
   return (
@@ -181,9 +180,16 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full rounded-lg bg-blue-800 py-3 text-sm font-bold text-white transition-colors hover:bg-blue-900"
+              disabled={submitting}
+              className="w-full rounded-lg bg-blue-800 py-3 text-sm font-bold text-white transition-colors hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isHindi ? "Login करें" : "Login"}
+              {submitting
+                ? isHindi
+                  ? "Login हो रहा है..."
+                  : "Logging in..."
+                : isHindi
+                  ? "Login करें"
+                  : "Login"}
             </button>
           </form>
 
